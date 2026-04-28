@@ -1,4 +1,5 @@
-// this file is make a limit of only one prisma client. Needed for development
+/* this file sets the lets us reuse on prims client over and over 
+during development important neondb has rate limits. */
 import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
