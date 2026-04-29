@@ -1,1 +1,49 @@
-/*.env
+# ─── Claude Code ─────────────────────────────────────────────────────────────
+CLAUDE.md
+
+# ─── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+
+# ─── Build outputs ───────────────────────────────────────────────────────────
+dist/
+dist-ssr/
+
+# ─── Environment variables ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── TypeScript ──────────────────────────────────────────────────────────────
+*.tsbuildinfo
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── OS ──────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Editors ─────────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─── Vite ────────────────────────────────────────────────────────────────────
+*.local
+
+# ─── Prisma ──────────────────────────────────────────────────────────────────
+# Generated client lives in node_modules — nothing extra to ignore here.
+# Keep prisma/migrations/ and schema.prisma committed.
+
+# ─── Testing / coverage ──────────────────────────────────────────────────────
+coverage/
