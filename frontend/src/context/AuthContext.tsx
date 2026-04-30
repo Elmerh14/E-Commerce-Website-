@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { API_URL } from '../lib/api'
 
@@ -21,10 +21,65 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
+function getTokenExpiry(token: string): number {
+  const payload = JSON.parse(atob(token.split('.')[1]))
+  return payload.exp * 1000
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearTimer = () => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = null
+  }
+
+  const clearSession = () => {
+    clearTimer()
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    setUser(null)
+    setAccessToken(null)
+  }
+
+  const scheduleRefresh = (token: string) => {
+    clearTimer()
+    try {
+      const expiresAt = getTokenExpiry(token)
+      const delay = Math.max(0, expiresAt - Date.now() - 60_000)
+      timerRef.current = setTimeout(doRefresh, delay)
+    } catch {
+      timerRef.current = setTimeout(doRefresh, 10 * 60_000)
+    }
+  }
+
+  const doRefresh = async () => {
+    const storedRefresh = localStorage.getItem('refreshToken')
+    if (!storedRefresh) { clearSession(); return }
+
+    const res = await fetch(`${API_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: storedRefresh }),
+    })
+    if (!res.ok) { clearSession(); return }
+
+    const data = await res.json()
+    localStorage.setItem('accessToken', data.accessToken)
+    localStorage.setItem('refreshToken', data.refreshToken)
+    setAccessToken(data.accessToken)
+    scheduleRefresh(data.accessToken)
+  }
+
+  const applyTokens = (token: string, refresh: string) => {
+    localStorage.setItem('accessToken', token)
+    localStorage.setItem('refreshToken', refresh)
+    setAccessToken(token)
+    scheduleRefresh(token)
+  }
 
   useEffect(() => {
     async function init() {
@@ -44,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const data = await res.json()
           setUser(data.user)
           setAccessToken(token)
+          scheduleRefresh(token)
           setLoading(false)
           return
         }
@@ -57,8 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         if (res.ok) {
           const { accessToken: newToken, refreshToken: newRefresh } = await res.json()
-          localStorage.setItem('accessToken', newToken)
-          localStorage.setItem('refreshToken', newRefresh)
+          applyTokens(newToken, newRefresh)
 
           const meRes = await fetch(`${API_URL}/api/auth/me`, {
             headers: { Authorization: `Bearer ${newToken}` },
@@ -66,19 +121,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (meRes.ok) {
             const data = await meRes.json()
             setUser(data.user)
-            setAccessToken(newToken)
             setLoading(false)
             return
           }
         }
       }
 
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
+      clearSession()
       setLoading(false)
     }
 
     init()
+    return () => clearTimer()
   }, [])
 
   const login = async (email: string, password: string) => {
@@ -89,11 +143,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'Login failed')
-
-    localStorage.setItem('accessToken', data.accessToken)
-    localStorage.setItem('refreshToken', data.refreshToken)
+    applyTokens(data.accessToken, data.refreshToken)
     setUser(data.user)
-    setAccessToken(data.accessToken)
   }
 
   const register = async (email: string, password: string, username: string): Promise<string> => {
@@ -104,20 +155,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'Registration failed')
-
-    localStorage.setItem('accessToken', data.accessToken)
-    localStorage.setItem('refreshToken', data.refreshToken)
+    applyTokens(data.accessToken, data.refreshToken)
     setUser(data.user)
-    setAccessToken(data.accessToken)
     return data.accessToken
   }
 
   const logout = () => {
     fetch(`${API_URL}/api/auth/logout`, { method: 'POST' })
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    setUser(null)
-    setAccessToken(null)
+    clearSession()
   }
 
   const updateUserPhoto = (photoUrl: string) => {

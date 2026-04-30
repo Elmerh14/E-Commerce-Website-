@@ -28,11 +28,11 @@ export default function InfoCardsSection() {
         <div className="flex justify-between gap-8">
           {cards.map(({ icon, title, description }) => (
             <div key={title} className="flex flex-col items-center text-center gap-3 flex-1">
-              <img src={icon} alt={title} className="w-24 h-24" />
-              <p className="font-semibold" style={{ fontSize: '24px' }}>{title}</p>
+              <img src={icon} alt={title} className="w-16 h-16 md:w-24 md:h-24" />
+              <p className="font-semibold text-[12px] md:text-[24px]">{title}</p>
               <p
-                className="text-black leading-relaxed whitespace-pre-line"
-                style={{ fontFamily: 'Inter, sans-serif', fontSize: '16px' }}
+                className="text-black leading-relaxed whitespace-pre-line text-[10px] md:text-[16px]"
+                style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 {description}
               </p>

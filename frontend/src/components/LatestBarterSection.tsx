@@ -21,7 +21,7 @@ export default function LatestBarterSection() {
     <section className="py-10">
       <Container>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-bold" style={{ fontSize: '50px' }}>Latest Barter Deals</h2>
+          <h2 className="font-bold text-[30px] md:text-[50px]">Latest Barter Deals</h2>
           <Link
             to="/listings?type=BARTER"
             className="text-sm font-medium hover:opacity-70 transition-opacity"
@@ -31,7 +31,7 @@ export default function LatestBarterSection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
           {listings.slice(0, 4).map((listing) => (
             <ListingCard key={listing.id} listing={listing} />
           ))}

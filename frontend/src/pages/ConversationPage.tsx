@@ -58,8 +58,12 @@ export default function ConversationPage() {
       fetch(`${API_URL}/api/conversations/${id}/messages`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
-        .then((res) => res.json())
-        .then((data) => setMessages(data.messages))
+        .then((res) => {
+          if (!res.ok) throw new Error()
+          return res.json()
+        })
+        .then((data) => setMessages(data.messages ?? []))
+        .catch(() => {})
     }
 
     fetchAll()
@@ -73,8 +77,12 @@ export default function ConversationPage() {
       fetch(`${API_URL}/api/conversations/${id}/messages`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
-        .then((res) => res.json())
-        .then((data) => setMessages(data.messages))
+        .then((res) => {
+          if (!res.ok) throw new Error()
+          return res.json()
+        })
+        .then((data) => setMessages(data.messages ?? []))
+        .catch(() => {})
     }, 30000)
 
     return () => clearInterval(interval)

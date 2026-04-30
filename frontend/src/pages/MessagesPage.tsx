@@ -40,8 +40,11 @@ export default function MessagesPage() {
       fetch(`${API_URL}/api/conversations`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
-        .then((res) => res.json())
-        .then((data) => setConversations(data.conversations))
+        .then((res) => {
+          if (!res.ok) throw new Error()
+          return res.json()
+        })
+        .then((data) => setConversations(data.conversations ?? []))
         .catch(() => setError('Failed to load conversations.'))
         .finally(() => setFetching(false))
 
