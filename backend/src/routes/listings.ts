@@ -40,13 +40,13 @@ router.get('/recent', async (_req: Request, res: Response) => {
   const [forSale, forBarter] = await prisma.$transaction([
     prisma.listing.findMany({
       where: { status: 'ACTIVE', type: { in: ['SELL', 'BOTH'] } },
-      include: { user: { select: userSelect } },
+      include: { user: { select: userSelect }, images: { orderBy: { sortOrder: 'asc' }, take: 1 } },
       orderBy: { createdAt: 'desc' },
       take: 8,
     }),
     prisma.listing.findMany({
       where: { status: 'ACTIVE', type: { in: ['BARTER', 'BOTH'] } },
-      include: { user: { select: userSelect } },
+      include: { user: { select: userSelect }, images: { orderBy: { sortOrder: 'asc' }, take: 1 } },
       orderBy: { createdAt: 'desc' },
       take: 8,
     }),
