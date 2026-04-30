@@ -1,4 +1,4 @@
-import { href, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import Logo from './Logo'
 import instagramIcon from '../assets/instagramFooter.svg'
 import xIcon from '../assets/xFooter.svg'
