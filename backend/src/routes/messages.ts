@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
+import { getIO } from '../lib/socket'
 
 const router = Router({ mergeParams: true })
 
@@ -73,6 +74,14 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
       data: { isRead: true },
     }),
   ])
+
+  // Broadcast the new message to everyone in the conversation room
+  const io = getIO()
+  io.to(`conversation:${conversationId}`).emit('new_message', message)
+
+  // Notify both participants so their MessagesPage unread counts refresh
+  io.to(`user:${conversation.buyerId}`).emit('conversations_updated')
+  io.to(`user:${conversation.sellerId}`).emit('conversations_updated')
 
   res.status(201).json({ message })
 })

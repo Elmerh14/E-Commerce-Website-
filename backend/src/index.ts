@@ -1,9 +1,14 @@
 import 'dotenv/config'
+import { createServer } from 'http'
 import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
+
+import { verifyAccessToken } from './lib/jwt'
+import { initSocket } from './lib/socket'
+import { prisma } from './lib/prisma'
 
 import authRouter from './routes/auth'
 import usersRouter from './routes/users'
@@ -14,6 +19,7 @@ import messagesRouter from './routes/messages'
 import reviewsRouter from './routes/reviews'
 
 const app = express()
+const httpServer = createServer(app)
 const port = process.env.PORT || 3000
 
 app.use(helmet())
@@ -63,6 +69,48 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   })
 })
 
-app.listen(port, () => {
+// ─── Socket.io ───────────────────────────────────────────────────────────────
+
+const io = initSocket(httpServer, process.env.CLIENT_URL!)
+
+// Authenticate every socket connection using the JWT access token
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token as string | undefined
+  if (!token) return next(new Error('Unauthorized'))
+  try {
+    const payload = verifyAccessToken(token)
+    socket.data.userId = payload.userId
+    next()
+  } catch {
+    next(new Error('Unauthorized'))
+  }
+})
+
+io.on('connection', async (socket) => {
+  const userId: number = socket.data.userId
+
+  // Each user gets a personal room for conversation-list updates
+  socket.join(`user:${userId}`)
+
+  // Join all existing conversation rooms for this user
+  try {
+    const conversations = await prisma.conversation.findMany({
+      where: { OR: [{ buyerId: userId }, { sellerId: userId }] },
+      select: { id: true },
+    })
+    conversations.forEach((c) => socket.join(`conversation:${c.id}`))
+  } catch {
+    // Non-fatal — polling is the fallback
+  }
+
+  // Client calls this after starting a new conversation so it gets real-time messages
+  socket.on('join_conversation', (conversationId: number) => {
+    socket.join(`conversation:${conversationId}`)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+httpServer.listen(port, () => {
   console.log(`Server listening on port ${port}`)
 })
