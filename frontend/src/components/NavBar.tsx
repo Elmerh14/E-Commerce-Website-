@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from './Logo.tsx'
 import Container from './Container.tsx'
-import cart from '../assets/cart.svg'
-import accountIcon from '../assets/account.svg'
+import AccountMenu from './AccountMenu'
+import messageIcon from '../assets/messagIcon.svg'
 import hamburgerMenue from '../assets/hamburgerMenue.svg'
 import searchIcon from '../assets/searchButoon.svg'
 
@@ -60,13 +60,14 @@ export default function NavBar() {
         </div>
 
         {/* Right: icons always visible */}
-        <div className="flex-1 flex items-center justify-end gap-4 md:gap-20">
-          <Link to="/login" className="hidden md:flex items-center gap-1 cursor-pointer">
-            <img src={accountIcon} alt="account" className="w-7 h-7" />
-            <span className="font-bold text-base">Account</span>
+        <div className="flex-1 flex items-center justify-end gap-4 md:gap-8">
+          <Link to="/messages" className="flex items-center gap-1 cursor-pointer">
+            <img src={messageIcon} alt="messages" className="w-7 h-7" />
           </Link>
-          <img src={accountIcon} alt="account" className="w-7 h-7 cursor-pointer md:hidden" />
-          <img src={cart} alt="shopping cart" className="w-7 h-7 cursor-pointer" />
+          <AccountMenu />
+          <Link to="/listings/create" className="hidden md:flex items-center gap-1.5 font-bold text-sm text-white px-4 py-2 rounded-lg cursor-pointer hover:opacity-90 transition-opacity whitespace-nowrap" style={{ backgroundColor: '#FF9E0C' }}>
+            + Listing
+          </Link>
         </div>
 
       </Container>
@@ -113,6 +114,13 @@ export default function NavBar() {
 
             {/* Category links */}
             <nav className="flex flex-col px-5 py-4 gap-1">
+              <Link
+                to="/listings/create"
+                className="py-3 text-base font-bold text-[#FF9E0C] border-b border-gray-100"
+                onClick={() => setMenuOpen(false)}
+              >
+                + Post a listing
+              </Link>
               {mobileCategories.map((cat) => (
                 <Link
                   key={cat}

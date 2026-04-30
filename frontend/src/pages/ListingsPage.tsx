@@ -1,16 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-
-interface Listing {
-  id: number
-  title: string
-  price: string | null
-  type: string
-  condition: string
-  location: string
-  category: string
-  user: { id: number; username: string; photoUrl: string | null }
-}
+import ListingCard, { type Listing } from '../components/ListingCard'
 
 export default function ListingsPage() {
   const [searchParams] = useSearchParams()
@@ -60,13 +50,7 @@ export default function ListingsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {listings.map((listing) => (
-          <div key={listing.id} className="border border-gray-200 rounded-lg p-4 flex flex-col gap-2">
-            <span className="text-xs text-gray-400 uppercase">{listing.category}</span>
-            <h2 className="font-semibold text-base">{listing.title}</h2>
-            <p className="text-sm text-gray-500">{listing.condition} · {listing.location}</p>
-            {listing.price && <p className="font-bold">${listing.price}</p>}
-            <p className="text-xs text-gray-400">{listing.type} · by {listing.user.username}</p>
-          </div>
+          <ListingCard key={listing.id} listing={listing} />
         ))}
       </div>
     </div>
