@@ -30,7 +30,7 @@ interface Message {
 
 export default function ConversationPage() {
   const { id } = useParams()
-  const { user, accessToken, loading } = useAuth()
+  const { user, accessToken, loading, socket } = useAuth()
   const navigate = useNavigate()
   const [conversation, setConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -73,20 +73,21 @@ export default function ConversationPage() {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
 
-    const interval = setInterval(() => {
-      fetch(`${API_URL}/api/conversations/${id}/messages`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error()
-          return res.json()
-        })
-        .then((data) => setMessages(data.messages ?? []))
-        .catch(() => {})
-    }, 30000)
-
-    return () => clearInterval(interval)
+    return () => {}
   }, [id, accessToken])
+
+  useEffect(() => {
+    if (!socket || !id) return
+
+    socket.emit('join_conversation', parseInt(id))
+
+    const handleNewMessage = (message: Message) => {
+      setMessages((prev) => [...prev, message])
+    }
+
+    socket.on('new_message', handleNewMessage)
+    return () => { socket.off('new_message', handleNewMessage) }
+  }, [socket, id])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })

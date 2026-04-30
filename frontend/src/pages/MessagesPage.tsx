@@ -23,7 +23,7 @@ interface Conversation {
 }
 
 export default function MessagesPage() {
-  const { user, accessToken, loading } = useAuth()
+  const { user, accessToken, loading, socket } = useAuth()
   const navigate = useNavigate()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [fetching, setFetching] = useState(true)
@@ -49,9 +49,25 @@ export default function MessagesPage() {
         .finally(() => setFetching(false))
 
     fetchConversations()
-    const interval = setInterval(fetchConversations, 10000)
-    return () => clearInterval(interval)
+    return () => {}
   }, [accessToken])
+
+  useEffect(() => {
+    if (!socket) return
+    socket.on('conversations_updated', () => {
+      if (!accessToken) return
+      fetch(`${API_URL}/api/conversations`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error()
+          return res.json()
+        })
+        .then((data) => setConversations(data.conversations ?? []))
+        .catch(() => {})
+    })
+    return () => { socket.off('conversations_updated') }
+  }, [socket, accessToken])
 
   if (loading || !user) return null
 

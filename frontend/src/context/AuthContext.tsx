@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { io as socketIO } from 'socket.io-client'
+import type { Socket } from 'socket.io-client'
 import { API_URL } from '../lib/api'
 
 interface User {
@@ -13,6 +15,7 @@ interface AuthContextType {
   user: User | null
   accessToken: string | null
   loading: boolean
+  socket: Socket | null
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, username: string) => Promise<string>
   logout: () => void
@@ -30,15 +33,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [socket, setSocket] = useState<Socket | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const socketRef = useRef<Socket | null>(null)
 
   const clearTimer = () => {
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = null
   }
 
+  const connectSocket = (token: string) => {
+    // Disconnect any existing socket first
+    if (socketRef.current) {
+      socketRef.current.disconnect()
+    }
+    const s = socketIO(API_URL, { auth: { token } })
+    socketRef.current = s
+    setSocket(s)
+  }
+
+  const disconnectSocket = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect()
+      socketRef.current = null
+    }
+    setSocket(null)
+  }
+
   const clearSession = () => {
     clearTimer()
+    disconnectSocket()
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
     setUser(null)
@@ -68,10 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!res.ok) { clearSession(); return }
 
     const data = await res.json()
-    localStorage.setItem('accessToken', data.accessToken)
-    localStorage.setItem('refreshToken', data.refreshToken)
-    setAccessToken(data.accessToken)
-    scheduleRefresh(data.accessToken)
+    applyTokens(data.accessToken, data.refreshToken)
   }
 
   const applyTokens = (token: string, refresh: string) => {
@@ -79,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('refreshToken', refresh)
     setAccessToken(token)
     scheduleRefresh(token)
+    connectSocket(token)
   }
 
   useEffect(() => {
@@ -100,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(data.user)
           setAccessToken(token)
           scheduleRefresh(token)
+          connectSocket(token)
           setLoading(false)
           return
         }
@@ -132,7 +155,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     init()
-    return () => clearTimer()
+    return () => {
+      clearTimer()
+      disconnectSocket()
+    }
   }, [])
 
   const login = async (email: string, password: string) => {
@@ -170,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, loading, login, register, logout, updateUserPhoto }}>
+    <AuthContext.Provider value={{ user, accessToken, loading, socket, login, register, logout, updateUserPhoto }}>
       {children}
     </AuthContext.Provider>
   )
