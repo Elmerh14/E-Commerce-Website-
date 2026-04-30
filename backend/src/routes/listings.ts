@@ -84,7 +84,10 @@ router.get('/', async (req: Request, res: Response) => {
   const [listings, total] = await prisma.$transaction([
     prisma.listing.findMany({
       where,
-      include: { user: { select: userSelect } },
+      include: {
+        user: { select: userSelect },
+        images: { orderBy: { sortOrder: 'asc' }, take: 1 },
+      },
       orderBy: { createdAt: 'desc' },
       skip,
       take: limitNum,
@@ -110,7 +113,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     where: { id },
     include: {
       user: { select: userSelect },
-      _count: { select: { images: true } },
+      images: { orderBy: { sortOrder: 'asc' } },
     },
   })
 

@@ -6,6 +6,7 @@ import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
 
 import authRouter from './routes/auth'
+import usersRouter from './routes/users'
 import listingsRouter from './routes/listings'
 import listingImagesRouter from './routes/listingImages'
 import conversationsRouter from './routes/conversations'
@@ -42,6 +43,7 @@ app.get('/health', (_req: Request, res: Response) => {
 })
 
 app.use('/api/auth', authRouter)
+app.use('/api/users', usersRouter)
 app.use('/api/listings/:id/images', listingImagesRouter)
 app.use('/api/listings', listingsRouter)
 app.use('/api/conversations/:conversationId/messages', messagesRouter)

@@ -21,10 +21,12 @@ const ALLOWED_CONTENT_TYPES: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
 }
 
 const presignSchema = z.object({
-  contentType: z.enum(['image/jpeg', 'image/png', 'image/webp']),
+  contentType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']),
 })
 
 const imageSchema = z.object({
