@@ -1,5 +1,8 @@
 import Container from '../components/Container'
 import HeroSection from '../components/HeroSection'
+import InfoCardsSection from '../components/InfoCardsSection'
+import RecentDealsSection from '../components/RecentDealsSection'
+import LatestBarterSection from '../components/LatestBarterSection'
 
 export default function HomePage() {
   return (
@@ -7,6 +10,9 @@ export default function HomePage() {
       <Container>
         <HeroSection />
       </Container>
+      <InfoCardsSection />
+      <RecentDealsSection />
+      <LatestBarterSection />
     </div>
   )
 }

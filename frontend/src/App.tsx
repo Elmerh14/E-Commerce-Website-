@@ -11,6 +11,7 @@ import ConversationPage from './pages/ConversationPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import UserProfilePage from './pages/UserProfilePage'
+import Footer from './components/Footer'
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Routes>
+        <Footer />
       </AuthProvider>
     </BrowserRouter>
   )
