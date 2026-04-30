@@ -117,8 +117,8 @@ model Message {
 
 model Review {
   id         Int      @id @default(autoincrement())
-  listingId  Int
-  listing    Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId  Int?
+  listing    Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
   reviewerId Int
   reviewer   User     @relation("ReviewsWritten", fields: [reviewerId], references: [id], onDelete: Cascade)
   reviewedId Int

@@ -28,6 +28,18 @@ const presignSchema = z.object({
   contentType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']),
 })
 
+// GET /api/users/listings
+router.get('/listings', requireAuth, async (req: Request, res: Response) => {
+  const listings = await prisma.listing.findMany({
+    where: { userId: req.user!.userId },
+    include: {
+      images: { orderBy: { sortOrder: 'asc' }, take: 1 },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+  res.status(200).json({ listings })
+})
+
 // POST /api/users/photo/presign
 router.post('/photo/presign', requireAuth, async (req: Request, res: Response) => {
   const result = presignSchema.safeParse(req.body)
@@ -65,6 +77,27 @@ router.patch('/photo', requireAuth, async (req: Request, res: Response) => {
     data: { photoUrl: result.data.photoUrl },
     select: { id: true, email: true, username: true, photoUrl: true },
   })
+
+  res.status(200).json({ user })
+})
+
+// GET /api/users/:userId
+router.get('/:userId', async (req: Request, res: Response) => {
+  const userId = parseInt(req.params.userId as string)
+  if (isNaN(userId)) {
+    res.status(400).json({ error: 'Invalid user ID' })
+    return
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, username: true, photoUrl: true },
+  })
+
+  if (!user) {
+    res.status(404).json({ error: 'User not found' })
+    return
+  }
 
   res.status(200).json({ user })
 })

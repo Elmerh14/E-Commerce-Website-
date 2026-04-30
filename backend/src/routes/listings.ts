@@ -57,7 +57,7 @@ router.get('/recent', async (_req: Request, res: Response) => {
 
 // GET /api/listings
 router.get('/', async (req: Request, res: Response) => {
-  const { search, category, type, minPrice, maxPrice, location, page = '1', limit = '20' } = req.query
+  const { search, category, type, minPrice, maxPrice, location, userId, page = '1', limit = '20' } = req.query
 
   const pageNum = Math.max(1, parseInt(page as string) || 1)
   const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 20))
@@ -65,6 +65,7 @@ router.get('/', async (req: Request, res: Response) => {
 
   const where: Prisma.ListingWhereInput = { status: 'ACTIVE' }
 
+  if (userId) where.userId = parseInt(userId as string)
   if (search) {
     where.OR = [
       { title: { contains: search as string, mode: 'insensitive' } },
@@ -72,7 +73,8 @@ router.get('/', async (req: Request, res: Response) => {
     ]
   }
   if (category) where.category = category as string
-  if (type) where.type = type as Prisma.EnumListingTypeFilter
+  if (type === 'SELL') where.type = { in: ['SELL', 'BOTH'] }
+  else if (type === 'BARTER') where.type = { in: ['BARTER', 'BOTH'] }
   if (location) where.location = { contains: location as string, mode: 'insensitive' }
   if (minPrice || maxPrice) {
     where.price = {

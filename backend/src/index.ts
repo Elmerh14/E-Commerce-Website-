@@ -21,16 +21,18 @@ app.use(cors({ origin: process.env.CLIENT_URL }))
 app.use(morgan('dev'))
 app.use(express.json())
 
+const isDev = process.env.NODE_ENV !== 'production'
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 100,
+  limit: isDev ? 2000 : 100,
   standardHeaders: true,
   legacyHeaders: false,
 })
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 20,
+  limit: isDev ? 500 : 20,
   standardHeaders: true,
   legacyHeaders: false,
 })

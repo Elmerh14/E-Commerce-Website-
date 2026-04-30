@@ -68,6 +68,14 @@ router.post('/reviews', requireAuth, async (req: Request, res: Response) => {
     return
   }
 
+  const conversation = await prisma.conversation.findUnique({
+    where: { listingId_buyerId: { listingId, buyerId: reviewerId } },
+  })
+  if (!conversation) {
+    res.status(403).json({ error: 'You can only review a seller after messaging them about this listing' })
+    return
+  }
+
   try {
     const review = await prisma.review.create({
       data: { listingId, reviewerId, reviewedId, rating, body },

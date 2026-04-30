@@ -27,6 +27,13 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
         orderBy: { createdAt: 'desc' },
         take: 1,
       },
+      _count: {
+        select: {
+          messages: {
+            where: { isRead: false, senderId: { not: userId } },
+          },
+        },
+      },
     },
     orderBy: { lastMessageAt: 'desc' },
   })
