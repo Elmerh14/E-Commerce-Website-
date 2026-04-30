@@ -100,8 +100,7 @@ export default function ConversationPage() {
       body: JSON.stringify({ body }),
     })
     if (!res.ok) return
-    const data = await res.json()
-    setMessages((prev) => [...prev, data.message])
+    
   }
 
   if (loading || !user) return null
