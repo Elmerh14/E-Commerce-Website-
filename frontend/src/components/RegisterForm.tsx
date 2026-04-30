@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { API_URL } from '../lib/api'
 import FormField from './FormField'
 
 export default function RegisterForm() {
@@ -30,7 +31,7 @@ export default function RegisterForm() {
       const token = await register(email, password, username)
 
       if (photoFile) {
-        const presignRes = await fetch('http://localhost:3000/api/users/photo/presign', {
+        const presignRes = await fetch(`${API_URL}/api/users/photo/presign`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ contentType: photoFile.type }),
@@ -38,7 +39,7 @@ export default function RegisterForm() {
         if (presignRes.ok) {
           const { uploadUrl, photoUrl } = await presignRes.json()
           await fetch(uploadUrl, { method: 'PUT', body: photoFile, headers: { 'Content-Type': photoFile.type } })
-          await fetch('http://localhost:3000/api/users/photo', {
+          await fetch(`${API_URL}/api/users/photo`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ photoUrl }),
@@ -63,7 +64,6 @@ export default function RegisterForm() {
       {error && <p className="text-red-500 text-sm mb-6">{error}</p>}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        {/* Photo picker */}
         <div className="flex items-center gap-5">
           <button
             type="button"

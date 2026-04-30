@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { API_URL } from '../lib/api'
 import FormField from './FormField'
 
 const CATEGORIES = ['Auto', 'Clothing', 'Electronics', 'Home', 'Kids', 'Tools']
@@ -46,7 +47,7 @@ export default function CreateListingForm() {
       const body: Record<string, unknown> = { type, title, category, condition, description, location }
       if (type !== 'BARTER') body.price = parseFloat(price)
 
-      const res = await fetch('http://localhost:3000/api/listings', {
+      const res = await fetch(`${API_URL}/api/listings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
         body: JSON.stringify(body),
@@ -58,7 +59,7 @@ export default function CreateListingForm() {
 
       for (let i = 0; i < photos.length; i++) {
         const file = photos[i]
-        const presignRes = await fetch(`http://localhost:3000/api/listings/${listingId}/images/presign`, {
+        const presignRes = await fetch(`${API_URL}/api/listings/${listingId}/images/presign`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
           body: JSON.stringify({ contentType: file.type }),
@@ -66,7 +67,7 @@ export default function CreateListingForm() {
         if (!presignRes.ok) continue
         const { uploadUrl, imageUrl } = await presignRes.json()
         await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
-        await fetch(`http://localhost:3000/api/listings/${listingId}/images`, {
+        await fetch(`${API_URL}/api/listings/${listingId}/images`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
           body: JSON.stringify({ imageUrl, sortOrder: i }),

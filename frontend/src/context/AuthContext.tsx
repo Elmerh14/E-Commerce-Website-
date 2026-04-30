@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { API_URL } from '../lib/api'
 
 interface User {
   id: number
@@ -36,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (token) {
-        const res = await fetch('http://localhost:3000/api/auth/me', {
+        const res = await fetch(`${API_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (res.ok) {
@@ -49,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (refresh) {
-        const res = await fetch('http://localhost:3000/api/auth/refresh', {
+        const res = await fetch(`${API_URL}/api/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken: refresh }),
@@ -59,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem('accessToken', newToken)
           localStorage.setItem('refreshToken', newRefresh)
 
-          const meRes = await fetch('http://localhost:3000/api/auth/me', {
+          const meRes = await fetch(`${API_URL}/api/auth/me`, {
             headers: { Authorization: `Bearer ${newToken}` },
           })
           if (meRes.ok) {
@@ -81,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string) => {
-    const res = await fetch('http://localhost:3000/api/auth/login', {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -96,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const register = async (email: string, password: string, username: string): Promise<string> => {
-    const res = await fetch('http://localhost:3000/api/auth/register', {
+    const res = await fetch(`${API_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, username }),
@@ -112,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = () => {
-    fetch('http://localhost:3000/api/auth/logout', { method: 'POST' })
+    fetch(`${API_URL}/api/auth/logout`, { method: 'POST' })
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
     setUser(null)

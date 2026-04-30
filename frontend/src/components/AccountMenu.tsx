@@ -42,7 +42,14 @@ export default function AccountMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+        <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+          <Link
+            to="/my-listings"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-3 text-sm hover:bg-gray-50 font-medium border-b border-gray-100"
+          >
+            My Listings
+          </Link>
           <button
             onClick={() => { logout(); navigate('/'); setOpen(false) }}
             className="w-full px-4 py-3 text-sm text-left hover:bg-gray-50 text-red-500 font-medium cursor-pointer"
